@@ -40,7 +40,7 @@
     "hash-sum": "^1.0.2",
     "loader-utils": "^1.1.0",
     "vue-hot-reload-api": "^2.3.0",
-    "vue-style-loader": "https://github.com/alfredriesen/vue-style-loader/tarball/master"
+    "vue-style-loader": "https://github.com/alfredriesen/vue-style-loader/tarball/40172e55f43d2313b1e928ce66c6785bc1a778b1"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
