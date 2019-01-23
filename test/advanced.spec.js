@@ -54,12 +54,30 @@ test('expose file path as __file outside production', done => {
   })
 })
 
-test('expose file basename as __file in production', done => {
+test('no __file in production when exposeFilename disabled', done => {
   const origNodeEnv = process.env.NODE_ENV
   process.env.NODE_ENV = 'production'
   mockBundleAndRun(
     {
       entry: 'basic.vue'
+    },
+    ({ module }) => {
+      expect(module.__file).toBe(undefined)
+      process.env.NODE_ENV = origNodeEnv
+      done()
+    }
+  )
+})
+
+test('expose file basename as __file in production when exposeFilename enabled', done => {
+  const origNodeEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  mockBundleAndRun(
+    {
+      entry: 'basic.vue',
+      vue: {
+        exposeFilename: true
+      }
     },
     ({ module }) => {
       expect(module.__file).toBe('basic.vue')
@@ -133,6 +151,38 @@ test('extract CSS', done => {
     expect(css).toContain(`h1 {\n  color: #f00;\n}`)
     // extract + scoped
     expect(css).toContain(`h2[${id}] {\n  color: green;\n}`)
+    done()
+  })
+})
+
+test('extract CSS with code spliting', done => {
+  bundle({
+    entry: 'extract-css-chunks.vue',
+    modify: config => {
+      config.module.rules = [
+        {
+          test: /\.vue$/,
+          use: 'vue-loader'
+        },
+        {
+          test: /\.css$/,
+          use: [
+            MiniCssExtractPlugin.loader,
+            'css-loader'
+          ]
+        }
+      ]
+    },
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: 'test.output.css'
+      })
+    ]
+  }, code => {
+    const css = normalizeNewline(mfs.readFileSync('/test.output.css').toString())
+    expect(css).toContain(`h1 {\n  color: red;\n}`)
+    expect(mfs.existsSync('/empty.test.output.css')).toBe(false)
+    expect(mfs.existsSync('/basic.test.output.css')).toBe(true)
     done()
   })
 })
